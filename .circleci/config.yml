@@ -7,9 +7,9 @@ workflows:
     jobs:
       - aws-ecr/build-and-push-image:
           account-url: AWS_ECR_ACCOUNT_URL
-          region: AWS_REGION
+          region: AWS_DEFAULT_REGION
           repo: "hello-fargate"
-          tag: "${CIRCLE_SHA1}"
+          tag: "1"
       - aws-ecs/deploy-service-update:
           cluster-name: "${MY_APP_PREFIX}-cluster"
           container-image-name-updates: "container=${MY_APP_PREFIX}-service,tag=${CIRCLE_SHA1}"
@@ -19,4 +19,4 @@ workflows:
 family: "Monorevo-Test" # ECSのタスク定義名
 cluster-name: "Monorevo-Cluster" # ECSクラスター名
 service-name: "Monorevo-service" # ECSのサービス名
-container-image-name-updates: "container=${ECS_PARAM_FAMILY},tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
+container-image-name-updates: "container=ECS_PARAM_FAMILY,tag=1" # タスク定義で指定しているコンテナ名
