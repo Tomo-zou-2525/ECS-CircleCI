@@ -16,11 +16,6 @@ workflows:
           service-name: "Monorevo-service"
           requires:
             - aws-ecr/build-and-push-image
-#           cluster-name: "Monorevo-Cluster"
-#           container-image-name-updates: "container=hello-fargate,tag=latest"
-#           family: "Monorevo-Test"
-#           requires:
-#             - aws-ecr/build-and-push-image
 # family: "Monorevo-Test" # ECSのタスク定義名
 # cluster-name: "Monorevo-Cluster" # ECSクラスター名
 # service-name: "Monorevo-service" # ECSのサービス名
