@@ -14,7 +14,7 @@ workflows:
           cluster-name: "Monorevo-Cluster"
           family: "Monorevo-Test"
           service-name: "Monorevo-service"
-          container-image-name-updates: "hello-fargate,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
+          container-image-name-updates: "container=hello-fargate,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
           requires:
             - aws-ecr/build-and-push-image
 # family: "Monorevo-Test" # ECSのタスク定義名
