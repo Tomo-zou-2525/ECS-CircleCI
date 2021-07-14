@@ -12,7 +12,7 @@ workflows:
           tag: "1"
       - aws-ecs/deploy-service-update:
           cluster-name: "Monorevo-Cluster"
-          container-image-name-updates: "container=Monorevo-Test,tag=${CIRCLE_SHA1}"
+          container-image-name-updates: "container=100725229921.dkr.ecr.ap-northeast-1.amazonaws.com,tag=${CIRCLE_SHA1}"
           family: "Monorevo-Test"
           requires:
             - aws-ecr/build-and-push-image
