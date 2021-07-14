@@ -1,0 +1,13 @@
+aws ecs update-service \
+    --cluster "$ECS_PARAM_CLUSTER_NAME" \
+    --service "${ECS_PARAM_SERVICE_NAME}" \
+    --task-definition "${CCI_ORB_AWS_ECS_REGISTERED_TASK_DFN}" \
+    --output text \
+    --query service.taskDefinition \
+
+aws ecs register-task-definition \
+    --family "$ECS_PARAM_FAMILY" \
+    --container-definitions "${CCI_ORB_AWS_ECS_CONTAINER_DEFS}" \
+    "$@" \
+    --output text \
+    --query 'taskDefinition.taskDefinitionArn')
