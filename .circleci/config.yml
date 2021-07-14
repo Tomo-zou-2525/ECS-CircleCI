@@ -12,7 +12,7 @@ workflows:
           tag: "latest"
       - aws-ecs/deploy-service-update:
           cluster-name: "Monorevo-Cluster"
-          container-image-name-updates: "container=ECS_PARAM_FAMILY,tag=latest"
+          container-image-name-updates: "container=hello-fargate,tag=latest"
           family: "Monorevo-Test"
           requires:
             - aws-ecr/build-and-push-image
