@@ -9,10 +9,10 @@ workflows:
           account-url: AWS_ECR_ACCOUNT_URL
           region: AWS_DEFAULT_REGION
           repo: "hello-fargate"
-          tag: "${CIRCLE_SHA1}"
+          tag: "latest"
       - aws-ecs/deploy-service-update:
           cluster-name: "Monorevo-Cluster"
-          container-image-name-updates: "container=100725229921.dkr.ecr.ap-northeast-1.amazonaws.com,tag=${CIRCLE_SHA1}"
+          container-image-name-updates: "container=ECS_PARAM_FAMILY,tag=latest"
           family: "Monorevo-Test"
           requires:
             - aws-ecr/build-and-push-image
