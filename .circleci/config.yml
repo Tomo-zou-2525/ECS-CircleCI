@@ -19,4 +19,4 @@ workflows:
 family: "Monorevo-Test" # ECSのタスク定義名
 cluster-name: "Monorevo-Cluster" # ECSクラスター名
 service-name: "Monorevo-service" # ECSのサービス名
-container-image-name-updates: "container=Monorevo-Test,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
+container-image-name-updates: "container=${ECS_PARAM_FAMILY},tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
