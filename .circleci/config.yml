@@ -2,13 +2,21 @@ version: 2.1
 orbs:
   welcome: circleci/welcome-orb@0.4.1
 
-workflows:
-  welcome:
-    jobs:
+  jobs:
+    welcome:
       - welcome/run
-          filters:
-            branches:
-              only: "rc"
+        filters:
+          branches:
+            only: "rc"
+
+
+# workflows:
+#   welcome:
+#     jobs:
+#       - welcome/run
+#           filters:
+#             branches:
+#               only: "rc"
 
 # version: "2.1"
 # orbs:
