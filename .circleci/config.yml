@@ -11,6 +11,10 @@ workflows:
     # Run the welcome/run job in its own container
     jobs:
       - welcome/run
+      filters:
+        branches:
+          only:
+            - rc
 # version: "2.1"
 # orbs:
 #   aws-ecr: circleci/aws-ecr@6.15
