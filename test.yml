@@ -1,0 +1,43 @@
+version: "2.1"
+orbs:
+  aws-ecr: circleci/aws-ecr@6.15
+  aws-ecs: circleci/aws-ecs@2.0.0
+  aws-cli: circleci/aws-cli@2.0.0
+jobs:
+
+これはECRのタスク定義を更新し、サービスにデプロイする仕組み
+workflows:
+  build-and-deploy:
+    jobs:
+      - aws-ecr/build-and-push-image:
+          account-url: AWS_ECR_ACCOUNT_URL
+          region: AWS_DEFAULT_REGION
+          repo: "hello-fargate"
+          tag: "${CIRCLE_SHA1}"
+      - aws-ecs/deploy-service-update:
+          cluster-name: "Monorevo-Cluster"
+          family: "Monorevo-Test"
+          service-name: "Monorevo-service"
+          container-image-name-updates: "container=hello-fargate,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
+          requires:
+            - aws-ecr/build-and-push-image
+
+何がほしい
+ー各々のブランチにpush した際、環境が構築される仕組みが欲しい
+①ブランチごとに分ける機能
+filters:
+  branches:
+    only:
+      - prod
+
+②環境が構築される仕組み
+# ECR にレポジトリを作成
+aws ecr create-repository \
+     --repository-name hello-app \
+     --region ap-northeast-1
+
+docker build -t xxxxxxxxx.dkr.ecr.ap-northeast-1.amazonaws.com/hello-app:latest
+
+# ECR のレジストリ認証
+eval $(aws ecr get-login --region ap-northeast-1 --no-include-email)
+docker push xxxxxxxxx.dkr.ecr.ap-northeast-1.amazonaws.com/hello-app:latest

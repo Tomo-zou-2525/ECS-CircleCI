@@ -1,0 +1,175 @@
+#####
+# CircleCI config file.
+#
+# CircleCI requirement project settings:
+#   - Environment Variables
+#     - AWS_ACCESS_KEY_ID
+#     - AWS_SECRET_ACCESS_KEY
+#     - AWS_DEFAULT_REGION
+#####
+version: 2.1
+認証情報
+references:
+  docker_hub_authentication: &docker_hub_authentication
+    auth:
+      username: $DOCKER_LOGIN
+      password: $DOCKER_PASSWORD
+orbs:
+  python: circleci/python@1.4.0
+  node: circleci/node@4.3.0
+  docker: circleci/docker@1.5.0
+  aws-cli: circleci/aws-cli@2.0.0
+実行環境をまとめる
+executors:
+  Pythonの実行環境
+  python:
+    docker:
+      - image: lambci/lambda:build-python3.8
+        <<: *docker_hub_authentication
+  Pythonテストの実行環境
+  python-test:
+    docker:
+      - image: lambci/lambda:build-python3.8
+        <<: *docker_hub_authentication
+        environment:
+          ENV: test
+          DB_URI: mysql+mysqlconnector://root@127.0.0.1/circle_test
+          TEST_DB_URI: mysql+mysqlconnector://root@127.0.0.1/circle_test
+          BASE_API_URL: http://127.0.0.1:3000/v1
+          SMLOT_API_URL: http://127.0.0.1:3000/v1
+      - image: circleci/mysql:5.7-ram
+        <<: *docker_hub_authentication
+        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+ビルド実行
+jobs:
+  setup:
+    Pythonの実行環境を呼び出し
+    executor: python
+    イメージを呼ぶ
+    steps:
+      - checkout
+      - python/install-packages:
+          include-branch-in-cache-key: false
+          include-python-in-cache-key: false
+          pkg-manager: poetry
+      - node/install
+      - node/install-packages
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  lint開始
+  lint:
+    executor: python
+    steps:
+      - attach_workspace:
+          at: .
+      - python/install-packages:
+          include-branch-in-cache-key: false
+          include-python-in-cache-key: false
+          pkg-manager: poetry
+      - run:
+          name: Lint
+          command: ./scripts/lint.sh app alembic
+  test開始
+  test:
+    executor: python-test
+    steps:
+      - attach_workspace:
+          at: .
+      - python/install-packages:
+          include-branch-in-cache-key: false
+          include-python-in-cache-key: false
+          pkg-manager: poetry
+      - node/install
+      - docker/install-dockerize
+      - run:
+          name: Test
+          command: |
+            dockerize -wait tcp://localhost:3306 -timeout 1m
+            npm run serve:mock &
+            dockerize -wait tcp://localhost:3000 -timeout 1m
+            npm run test:all
+  デプロイ開始
+  deploy:
+    executor: python
+    環境変数を設定
+    parameters:
+      env:
+        type: enum
+        enum: ["stg", "prod", "rc"]
+    steps:
+      - attach_workspace:
+          at: .
+      - python/install-packages:
+          include-branch-in-cache-key: false
+          include-python-in-cache-key: false
+          pkg-manager: poetry
+      - node/install
+      - aws-cli/setup
+      - run:
+          name: Install Serverless CLI
+          command: |
+            curl -o- -L https://slss.io/install | bash
+            echo "export PATH=$HOME/.serverless/bin:$PATH" >> $BASH_ENV
+      - run:
+          name: Deploy
+          command: sls deploy -v --stage << parameters.env >> | tee /tmp/deploy.log
+      - run:
+          name: Migrate
+          command: |
+            API_KEY=$(cat /tmp/deploy.log | grep scheduler-purchase-deploy-key | sed -e 's/.*: //g')
+            ENDPOINT=$(cat /tmp/deploy.log | grep ServiceEndpoint: | sed -e 's/.*: //g')
+            curl -i -X GET "${ENDPOINT}/v1/internal/utils/migrate" -H "accept: application/json" -H "X-API-KEY: ${API_KEY}"
+
+実際に走るフロー
+workflows:
+  名前は任意
+  setup_and_deploy:
+    jobs:
+      - setup:
+          context:
+            - docker-hub-credencials
+      - lint:
+          context:
+            - docker-hub-credencials
+          requires:
+            - setup
+      - test:
+          context:
+            - docker-hub-credencials
+          requires:
+            - setup
+      - deploy:
+          name: deploy_staging
+          context:
+            - docker-hub-credencials
+          env: stg
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: develop
+      - deploy:
+          name: deploy_production
+          context:
+            - docker-hub-credencials
+          env: prod
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy:
+          name: deploy_release_candidate
+          context:
+            - docker-hub-credencials
+          env: rc
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: rc
