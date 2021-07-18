@@ -1,14 +1,33 @@
 version: 2.1
-orbs:
-  welcome: circleci/welcome-orb@0.4.1
 
-  jobs:
-    welcome:
-      - welcome/run
-        filters:
-          branches:
-            only:
-              - rc
+jobs:
+  test:
+    run: echo "hello test1"
+  test2:
+    run: echo "hello test2"
+
+workflows:
+  test_and_test2:
+    jobs:
+      - test
+      - test2:
+        requires:
+          - test
+          filters:
+            branches:
+              only:
+                - rc
+
+# orbs:
+#   welcome: circleci/welcome-orb@0.4.1
+
+#   jobs:
+#     welcome:
+#       - welcome/run
+#         filters:
+#           branches:
+#             only:
+#               - rc
 
 
 # workflows:
