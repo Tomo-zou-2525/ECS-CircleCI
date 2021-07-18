@@ -1,23 +1,36 @@
-version: "2.1"
+version: 2.1
 orbs:
-  aws-ecr: circleci/aws-ecr@6.15
-  aws-ecs: circleci/aws-ecs@2.0.0
+  welcome: circleci/welcome-orb@0.4.1
+
 workflows:
-  build-and-deploy:
+  welcome:
     jobs:
-      - aws-ecr/build-and-push-image:
-          account-url: AWS_ECR_ACCOUNT_URL
-          region: AWS_DEFAULT_REGION
-          repo: "hello-fargate"
-          tag: "${CIRCLE_SHA1}"
-      - aws-ecs/deploy-service-update:
-          cluster-name: "Monorevo-Cluster"
-          family: "Monorevo-Test"
-          service-name: "Monorevo-service"
-          container-image-name-updates: "container=hello-fargate,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
-          requires:
-            - aws-ecr/build-and-push-image
-# family: "Monorevo-Test" # ECSのタスク定義名
-# cluster-name: "Monorevo-Cluster" # ECSクラスター名
-# service-name: "Monorevo-service" # ECSのサービス名
-# container-image-name-updates: "container=hello-fargate,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
+      - welcome/run
+        filters:
+          branches:
+            only:
+              - rc
+
+# version: "2.1"
+# orbs:
+#   aws-ecr: circleci/aws-ecr@6.15
+#   aws-ecs: circleci/aws-ecs@2.0.0
+# workflows:
+#   build-and-deploy:
+#     jobs:
+#       - aws-ecr/build-and-push-image:
+#           account-url: AWS_ECR_ACCOUNT_URL
+#           region: AWS_DEFAULT_REGION
+#           repo: "hello-fargate"
+#           tag: "${CIRCLE_SHA1}"
+#       - aws-ecs/deploy-service-update:
+#           cluster-name: "Monorevo-Cluster"
+#           family: "Monorevo-Test"
+#           service-name: "Monorevo-service"
+#           container-image-name-updates: "container=hello-fargate,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
+#           requires:
+#             - aws-ecr/build-and-push-image
+# # family: "Monorevo-Test" # ECSのタスク定義名
+# # cluster-name: "Monorevo-Cluster" # ECSクラスター名
+# # service-name: "Monorevo-service" # ECSのサービス名
+# # container-image-name-updates: "container=hello-fargate,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
