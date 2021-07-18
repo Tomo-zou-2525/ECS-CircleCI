@@ -8,8 +8,7 @@ workflows:
       - welcome/run
           filters:
             branches:
-              only:
-                - rc
+              only: rc
 
 # version: "2.1"
 # orbs:
