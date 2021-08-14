@@ -3,6 +3,7 @@ orbs:
   aws-ecr: circleci/aws-ecr@6.15
   aws-ecs: circleci/aws-ecs@2.0.0
   aws-cli: circleci/aws-cli@2.0.0
+
 workflows:
   build-and-deploy:
     jobs:
@@ -15,6 +16,4 @@ workflows:
           cluster-name: "Monorevo-Cluster"
           family: "Monorevo-Test"
           service-name: "Monorevo-service"
-          container-image-name-updates: "container=hello-fargate,tag=${CIRCLE_SHA1}" # タスク定義で指定しているコンテナ名
-          requires:
-            - aws-ecr/build-and-push-image
+          container-image-name-updates: "container=hello-fargate,tag=${CIRCLE_SHA1}"
